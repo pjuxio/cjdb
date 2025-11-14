@@ -208,37 +208,41 @@ function showDetails(index) {
     const hasWebsite = org.Website && org.Website.trim() !== '';
     const isFlagged = org['Flagged for Review'] === true || org['Flagged for Review'] === 'true';
     
+    // Combine Operational Domain and Scope like on the card
+    const domain = org['Operational Domain'] || org.Scope || '';
+    const hasRegion = org.Region && ((Array.isArray(org.Region) && org.Region.length > 0) || org.Region);
+    const hasCountry = org.Country && org.Country.trim() !== '';
+    
     modalBody.innerHTML = `
         ${isFlagged ? '<div class="detail-section"><span class="flagged-badge" style="font-size: 1rem; padding: 8px 16px;">⚠️ Flagged for Review</span></div>' : ''}
         
         <div class="detail-grid">
-            <div class="detail-item">
-                <span class="detail-label">Operational Domain</span>
-                <div class="detail-value ${!org['Operational Domain'] ? 'empty' : ''}">
-                    ${org['Operational Domain'] || 'Not specified'}
+            ${domain ? `
+                <div class="detail-item">
+                    <span class="detail-label">Operational Domain</span>
+                    <div class="detail-value">
+                        ${domain}
+                    </div>
                 </div>
-            </div>
+            ` : ''}
             
-            <div class="detail-item">
-                <span class="detail-label">Scope</span>
-                <div class="detail-value ${!org.Scope ? 'empty' : ''}">
-                    ${org.Scope || 'Not specified'}
+            ${hasRegion ? `
+                <div class="detail-item">
+                    <span class="detail-label">Region</span>
+                    <div class="detail-value">
+                        ${Array.isArray(org.Region) ? org.Region.join(', ') : org.Region}
+                    </div>
                 </div>
-            </div>
+            ` : ''}
             
-            <div class="detail-item">
-                <span class="detail-label">Region</span>
-                <div class="detail-value ${!org.Region ? 'empty' : ''}">
-                    ${org.Region || 'Not specified'}
+            ${hasCountry ? `
+                <div class="detail-item">
+                    <span class="detail-label">Country</span>
+                    <div class="detail-value">
+                        ${org.Country}
+                    </div>
                 </div>
-            </div>
-            
-            <div class="detail-item">
-                <span class="detail-label">Country</span>
-                <div class="detail-value ${!org.Country ? 'empty' : ''}">
-                    ${org.Country || 'Not specified'}
-                </div>
-            </div>
+            ` : ''}
         </div>
         
         ${org['Locations/Countries'] ? `
