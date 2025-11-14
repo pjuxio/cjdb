@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Justice Organizations Database</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Climate Justice Organizations</h1>
+            <p class="subtitle">Afro-descendant communities working for climate justice globally</p>
+        </header>
+
+        <div class="filters">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search organizations...">
+            </div>
+            
+            <div class="filter-group">
+                <label for="scopeFilter">Operational Domain:</label>
+                <select id="scopeFilter">
+                    <option value="">All Domains</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="regionFilter">Region:</label>
+                <select id="regionFilter">
+                    <option value="">All Regions</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="focusFilter">Focus:</label>
+                <select id="focusFilter">
+                    <option value="">All Focus Areas</option>
+                </select>
+            </div>
+
+            <button id="resetFilters" class="btn-reset">Reset Filters</button>
+        </div>
+
+        <div class="stats">
+            <span id="resultCount">Loading organizations...</span>
+            <label class="stats-toggle">
+                <input type="checkbox" id="flaggedToggle">
+                <span class="toggle-text">Show flagged records</span>
+            </label>
+        </div>
+
+        <div id="cardsContainer" class="cards-grid">
+            <!-- Cards will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Modal for organization details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Organization Details</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be dynamically inserted -->
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <!-- Footer buttons will be dynamically inserted -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
