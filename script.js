@@ -1,5 +1,6 @@
 let organizations = [];
 let filteredOrganizations = [];
+let searchDebounceTimer = null;
 
 // Load and initialize the data
 async function loadData() {
@@ -78,7 +79,11 @@ function renderCards() {
     const container = document.getElementById('cardsContainer');
     
     if (filteredOrganizations.length === 0) {
-        container.innerHTML = '<div class="no-results">No organizations found matching your criteria.</div>';
+        const activeFiltersCount = getActiveFiltersCount();
+        const message = activeFiltersCount > 0 
+            ? 'No organizations found matching your criteria.<br><br>Try adjusting your filters or search terms.'
+            : 'No organizations available.';
+        container.innerHTML = `<div class="no-results">${message}</div>`;
         return;
     }
 
@@ -367,11 +372,17 @@ function toggleOverview(index) {
 
 // Filter functionality
 function applyFilters() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const scopeFilter = document.getElementById('scopeFilter').value;
-    const regionFilter = document.getElementById('regionFilter').value;
-    const focusFilter = document.getElementById('focusFilter').value;
-    const showFlagged = document.getElementById('flaggedToggle').checked;
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    loadingIndicator.classList.add('active');
+    
+    // Small delay to ensure loading indicator is visible
+    setTimeout(() => {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const scopeFilter = document.getElementById('scopeFilter').value;
+        const regionFilter = document.getElementById('regionFilter').value;
+        const focusFilter = document.getElementById('focusFilter').value;
+        const showFlagged = document.getElementById('flaggedToggle').checked;
 
     filteredOrganizations = organizations.filter(org => {
         // Search filter
@@ -400,8 +411,12 @@ function applyFilters() {
         return matchesSearch && matchesScope && matchesRegion && matchesFocus && matchesFlagged;
     });
 
-    renderCards();
-    updateStats();
+        renderCards();
+        updateStats();
+        
+        // Hide loading indicator
+        loadingIndicator.classList.remove('active');
+    }, 150);
 }
 
 // Update statistics
@@ -413,6 +428,85 @@ function updateStats() {
         : `Showing ${filtered} of ${total} organizations`;
     
     document.getElementById('resultCount').textContent = statsText;
+    updateActiveFilterBadges();
+}
+
+// Get count of active filters
+function getActiveFiltersCount() {
+    let count = 0;
+    if (document.getElementById('searchInput').value) count++;
+    if (document.getElementById('scopeFilter').value) count++;
+    if (document.getElementById('regionFilter').value) count++;
+    if (document.getElementById('focusFilter').value) count++;
+    if (document.getElementById('flaggedToggle').checked) count++;
+    return count;
+}
+
+// Update active filter badges
+function updateActiveFilterBadges() {
+    const container = document.getElementById('activeFilters');
+    const badges = [];
+    
+    const searchTerm = document.getElementById('searchInput').value;
+    if (searchTerm) {
+        badges.push(createFilterBadge('Search', searchTerm, 'search'));
+    }
+    
+    const scopeFilter = document.getElementById('scopeFilter');
+    if (scopeFilter.value) {
+        badges.push(createFilterBadge('Domain', scopeFilter.value, 'scope'));
+    }
+    
+    const regionFilter = document.getElementById('regionFilter');
+    if (regionFilter.value) {
+        badges.push(createFilterBadge('Region', regionFilter.value, 'region'));
+    }
+    
+    const focusFilter = document.getElementById('focusFilter');
+    if (focusFilter.value) {
+        badges.push(createFilterBadge('Focus', focusFilter.value, 'focus'));
+    }
+    
+    const flaggedToggle = document.getElementById('flaggedToggle');
+    if (flaggedToggle.checked) {
+        badges.push(createFilterBadge('Show', 'Flagged Records', 'flagged'));
+    }
+    
+    container.innerHTML = badges.join('');
+}
+
+// Create filter badge HTML
+function createFilterBadge(label, value, type) {
+    return `
+        <div class="filter-badge">
+            <span class="filter-badge-label">${label}:</span>
+            <span class="filter-badge-value">${value}</span>
+            <button class="filter-badge-remove" onclick="removeFilter('${type}')" aria-label="Remove filter">&times;</button>
+        </div>
+    `;
+}
+
+// Remove specific filter
+function removeFilter(type) {
+    switch(type) {
+        case 'search':
+            document.getElementById('searchInput').value = '';
+            updateClearButton();
+            break;
+        case 'scope':
+            document.getElementById('scopeFilter').value = '';
+            break;
+        case 'region':
+            document.getElementById('regionFilter').value = '';
+            break;
+        case 'focus':
+            document.getElementById('focusFilter').value = '';
+            break;
+        case 'flagged':
+            document.getElementById('flaggedToggle').checked = false;
+            break;
+    }
+    applyFilters();
 }
 
 // Reset filters
@@ -422,19 +516,64 @@ function resetFilters() {
     document.getElementById('regionFilter').value = '';
     document.getElementById('focusFilter').value = '';
     document.getElementById('flaggedToggle').checked = false;
+    updateClearButton();
     
-    filteredOrganizations = organizations;
-    renderCards();
-    updateStats();
+    applyFilters();
+}
+
+// Update clear button visibility
+function updateClearButton() {
+    const searchInput = document.getElementById('searchInput');
+    const clearButton = document.getElementById('clearSearch');
+    
+    if (searchInput.value.length > 0) {
+        clearButton.classList.add('visible');
+    } else {
+        clearButton.classList.remove('visible');
+    }
+}
+
+// Clear search input
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    updateClearButton();
+    document.getElementById('searchInput').focus();
+    applyFilters();
+}
+
+// Toggle filters visibility (mobile)
+function toggleFilters() {
+    const filtersContainer = document.querySelector('.filters');
+    filtersContainer.classList.toggle('collapsed');
+}
+
+// Debounced search
+function debounceSearch() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+        applyFilters();
+    }, 300);
 }
 
 // Event listeners
-document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('searchInput').addEventListener('input', function() {
+    updateClearButton();
+    debounceSearch();
+});
+
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        clearSearch();
+    }
+});
+
+document.getElementById('clearSearch').addEventListener('click', clearSearch);
 document.getElementById('scopeFilter').addEventListener('change', applyFilters);
 document.getElementById('regionFilter').addEventListener('change', applyFilters);
 document.getElementById('focusFilter').addEventListener('change', applyFilters);
 document.getElementById('flaggedToggle').addEventListener('change', applyFilters);
 document.getElementById('resetFilters').addEventListener('click', resetFilters);
+document.getElementById('toggleFilters').addEventListener('click', toggleFilters);
 
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', loadData);

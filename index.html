@@ -61,9 +61,18 @@
         </header>
 
         <div class="filters">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search organizations...">
+            <div class="filters-header">
+                <h2 class="filters-title">Search & Filter</h2>
+                <button id="toggleFilters" class="btn-toggle-filters" aria-label="Toggle filters">
+                    <span class="toggle-icon">−</span>
+                </button>
             </div>
+            <div class="filters-content" id="filtersContent">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search organizations...">
+                    <button class="clear-search" id="clearSearch" aria-label="Clear search">&times;</button>
+                </div>
             
             <div class="filter-group">
                 <label for="scopeFilter">Operational Domain:</label>
@@ -86,11 +95,20 @@
                 </select>
             </div>
 
-            <button id="resetFilters" class="btn-reset">Reset Filters</button>
+                <button id="resetFilters" class="btn-reset">Reset Filters</button>
+            </div>
+        </div>
+
+        <div id="activeFilters" class="active-filters">
+            <!-- Active filter badges will be inserted here -->
         </div>
 
         <div class="stats">
             <span id="resultCount">Loading organizations...</span>
+            <span class="loading-indicator" id="loadingIndicator">
+                <span class="spinner"></span>
+                <span class="loading-text">Filtering...</span>
+            </span>
             <label class="stats-toggle">
                 <input type="checkbox" id="flaggedToggle">
                 <span class="toggle-text">Show flagged records</span>
